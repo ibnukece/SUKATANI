@@ -11,7 +11,7 @@ if (empty($_POST['username']) || empty($_POST['password'])) {
     exit;
 }
 
-$username = mysqli_real_escape_string($conn, $_POST['username']);
+$username = mysqli_real_escape_string($conn, $_POST['root']);
 $password = md5($_POST['password']);
 
 $query  = "SELECT * FROM user WHERE username='$username' AND password='$password' LIMIT 1";
