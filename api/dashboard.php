@@ -1,11 +1,4 @@
 <?php
-/* ============================================================
-   api/dashboard.php — Halaman Dashboard SUKATANI
-   ============================================================ */
-session_start();
-include 'koneksi.php';          // ✅ was: '../config/koneksi.php'
-
-// Proteksi halaman — wajib login
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     header("Location: login.php");  // ✅ was: '../auth/login.php'
     exit;
