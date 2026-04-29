@@ -12,7 +12,7 @@ echo "<h2>Debug Mode: Proses Login</h2>";
 if (!file_exists('dashboard.php')) {
     die("❌ Error: File koneksi.php tidak ditemukan di folder api/");
 }
-include 'koneksi.php';
+include __DIR__ . '/koneksi.php';
 
 // 1. Cek Data POST
 echo "<b>1. Data POST yang diterima:</b><pre>";
