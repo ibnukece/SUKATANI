@@ -10,48 +10,47 @@ if (!isset($conn)) {
     die("❌ Error: Koneksi database belum terdefinisi.");
 }
 
-// ... lanjut ke logika login Anda
+session_start();
 
-include __DIR__ . '/koneksi.php';
+// Menggunakan path absolut agar aman di Vercel
+include_once __DIR__ . '/koneksi.php';
 
-// 1. Cek Data POST
-echo "<b>1. Data POST yang diterima:</b><pre>";
-print_r($_POST);
-echo "</pre>";
-
+// 1. Validasi input
 if (empty($_POST['username']) || empty($_POST['password'])) {
-    echo "❌ Masalah: Data username atau password kosong di sistem PHP.<br>";
-    echo "Pastikan di login.php, tag input memiliki name='username' dan name='password'.";
+    header("Location: login.php?error=Username dan password wajib diisi");
     exit;
 }
 
-// 2. Cek Koneksi Database
-if (!isset($conn)) {
-    die("❌ Error: Variabel \$conn tidak terbaca. Pastikan di koneksi.php namanya \$conn, bukan \$koneksi.");
-}
-echo "✅ Koneksi database terdeteksi.<br>";
+// 2. Keamanan Input & Hash Password
+$username = mysqli_real_escape_string($conn, $_POST['username']);
+$password = md5($_POST['password']); 
 
-// 3. Tes Query
-$user_input = mysqli_real_escape_string($conn, $_POST['username']);
-$pass_input = md5($_POST['password']);
-
-$query  = "SELECT * FROM user WHERE username='$user_input' AND password='$pass_input' LIMIT 1";
-echo "<b>2. Query yang dijalankan:</b> <code>$query</code><br>";
-
+// 3. Query Database
+$query  = "SELECT * FROM user WHERE username='$username' AND password='$password' LIMIT 1";
 $result = mysqli_query($conn, $query);
 
 if (!$result) {
-    die("❌ Query Error: " . mysqli_error($conn));
+    // Jika terjadi error pada query (opsional: aktifkan hanya saat debug)
+    header("Location: login.php?error=Terjadi kesalahan pada sistem.");
+    exit;
 }
 
 $cek = mysqli_num_rows($result);
-echo "<b>3. Hasil:</b> Ditemukan $cek user.<br><br>";
 
 if ($cek > 0) {
-    echo "✅ Login BERHASIL. Jika tidak ada debug ini, Anda seharusnya sudah di dashboard.";
-} else {
-    echo "❌ Login GAGAL: Username atau Password tidak cocok dengan data di TiDB Cloud.";
-}
+    $user = mysqli_fetch_assoc($result);
 
-echo "<br><br><a href='dashboard.php'>Kembali ke Login</a>";
-exit;
+    // 4. Set Session
+    $_SESSION['login'] = true;
+    $_SESSION['id']    = $user['id'];
+    $_SESSION['nama']  = $user['nama'];
+    $_SESSION['role']  = $user['role'];
+
+    // 5. Redirect ke Dashboard
+    header("Location: dashboard.php");
+    exit;
+} else {
+    // Jika user tidak ditemukan
+    header("Location: login.php?error=Username atau password salah");
+    exit;
+}
