@@ -1,19 +1,27 @@
 <?php
+/* ============================================================
+   api/dashboard.php — Dashboard SUKATANI (Vercel Session Fix)
+   ============================================================ */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Cek apakah sesi login benar-benar ada
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    // Jika tidak ada sesi, kita gunakan debug dulu untuk melihat apa yang salah
-    die("Sesi tidak ditemukan. Silakan <a href='login.php'>Login kembali</a>.");
+// ── FIX: Cek Sesi atau Cookie cadangan ──
+// Vercel sering menghapus sesi PHP, jadi kita cek Cookie 'login_session' yang dibuat di proseslogin.php
+$is_logged_in = isset($_SESSION['login']) || (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === "true");
+
+if (!$is_logged_in) {
+    // Jika benar-benar tidak ada bukti login, arahkan kembali ke login
+    header("Location: login.php?error=Sesi habis, silakan login kembali");
+    exit;
 }
 
-$nama_user = $_SESSION['nama'];
-$role_user = $_SESSION['role'];
+// ── FIX: Ambil data user dari Sesi atau Cookie ──
+$nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : (isset($_COOKIE['login_name']) ? $_COOKIE['login_name'] : "User");
+$role_user = isset($_SESSION['role']) ? $_SESSION['role'] : "peminjam";
 
 // ── Panggil api.php — semua variabel BPS siap dipakai ──
-include 'api.php';              // ✅ sudah benar
+include_once __DIR__ . '/api.php'; 
 
 // ── Cek tabel peminjaman ──
 $tabel_ada        = mysqli_query($conn, "SHOW TABLES LIKE 'peminjaman'");
