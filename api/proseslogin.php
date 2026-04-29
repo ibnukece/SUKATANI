@@ -1,35 +1,48 @@
 <?php
+/* ============================================================
+   api/proseslogin.php — Proses Autentikasi Login (Vercel Fix)
+   ============================================================ */
 session_start();
-ini_set('display_errors', 1);
+
+// Aktifkan error reporting hanya untuk menangkap masalah koneksi
+ini_set('display_errors', 0); // Matikan display untuk menghindari output sebelum header
 error_reporting(E_ALL);
 
-// Pastikan path ke koneksi.php benar
-include_once __DIR__ . '/koneksi.php';
-
-if (!isset($conn)) {
-    die("❌ Error: Koneksi database belum terdefinisi.");
+// 1. Pastikan file koneksi tersedia
+$path_koneksi = __DIR__ . '/koneksi.php';
+if (!file_exists($path_koneksi)) {
+    header("Location: login.php?error=Sistem koneksi hilang");
+    exit;
 }
 
-// Menggunakan path absolut agar aman di Vercel
-include_once __DIR__ . '/koneksi.php';
+include_once $path_koneksi;
 
-// 1. Validasi input
-if (empty($_POST['username']) || empty($_POST['password'])) {
+// 2. Cek apakah variabel koneksi ada
+if (!isset($conn)) {
+    header("Location: login.php?error=Gagal menghubungkan database");
+    exit;
+}
+
+// 3. Validasi input POST
+// Pastikan index 'username' dan 'password' sesuai dengan atribut 'name' di login.php
+$user_input = isset($_POST['username']) ? $_POST['username'] : '';
+$pass_input = isset($_POST['password']) ? $_POST['password'] : '';
+
+if (empty($user_input) || empty($pass_input)) {
     header("Location: login.php?error=Username dan password wajib diisi");
     exit;
 }
 
-// 2. Keamanan Input & Hash Password
-$username = mysqli_real_escape_string($conn, $_POST['username']);
-$password = md5($_POST['password']); 
+// 4. Keamanan Input & Hash Password (MD5 sesuai database Anda)
+$username = mysqli_real_escape_string($conn, $user_input);
+$password = md5($pass_input); 
 
-// 3. Query Database
+// 5. Query ke Database TiDB Cloud
 $query  = "SELECT * FROM user WHERE username='$username' AND password='$password' LIMIT 1";
 $result = mysqli_query($conn, $query);
 
 if (!$result) {
-    // Jika terjadi error pada query (opsional: aktifkan hanya saat debug)
-    header("Location: login.php?error=Terjadi kesalahan pada sistem.");
+    header("Location: login.php?error=Database query error");
     exit;
 }
 
@@ -38,17 +51,20 @@ $cek = mysqli_num_rows($result);
 if ($cek > 0) {
     $user = mysqli_fetch_assoc($result);
 
-    // 4. Set Session
+    // 6. Set Session Data
     $_SESSION['login'] = true;
     $_SESSION['id']    = $user['id'];
     $_SESSION['nama']  = $user['nama'];
     $_SESSION['role']  = $user['role'];
 
-    // 5. Redirect ke Dashboard
-    header("Location:dashboard.php");
+    // Simpan session secara eksplisit sebelum redirect (Penting untuk Vercel)
+    session_write_close();
+
+    // 7. Redirect ke Dashboard
+    header("Location: dashboard.php");
     exit;
 } else {
-    // Jika user tidak ditemukan
-    header("Location:dashboard.php");
+    // Jika user tidak ditemukan, arahkan kembali ke login dengan pesan error
+    header("Location: login.php?error=Username atau password salah");
     exit;
 }
