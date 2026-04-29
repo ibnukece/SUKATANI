@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 echo "<h2>Debug Mode: Proses Login</h2>";
 
 // Cek keberadaan file koneksi
-if (!file_exists('koneksi.php')) {
+if (!file_exists('dashboard.php')) {
     die("❌ Error: File koneksi.php tidak ditemukan di folder api/");
 }
 include 'koneksi.php';
