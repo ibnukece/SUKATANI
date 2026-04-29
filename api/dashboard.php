@@ -1,7 +1,8 @@
 <?php
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: login.php");  // ✅ was: '../auth/login.php'
-    exit;
+if (!isset($_SESSION['login'])) {
+    echo "Sesi tidak ditemukan. Data Sesi: ";
+    print_r($_SESSION);
+    die("<br><a href='login.php'>Kembali ke Login</a>");
 }
 
 $nama_user = $_SESSION['nama'];
