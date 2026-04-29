@@ -1,26 +1,35 @@
 <?php
 session_start();
-
-// Matikan redirect otomatis agar kita bisa baca error
-// error_reporting diaktifkan penuh
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-echo "Memulai pengecekan...<br>";
-
-if (!file_exists('koneksi.php')) {
-    die("Error: File koneksi.php tidak ditemukan di folder api/");
-}
-
 include 'koneksi.php';
 
-if (isset($conn)) {
-    echo "Variabel koneksi (\$conn) berhasil ditemukan.<br>";
-} else {
-    die("Error: Variabel \$conn tetap NULL. Periksa isi koneksi.php");
+// CEK 1: Apa isi data yang dikirim dari form?
+echo "Data yang diterima:<pre>";
+print_r($_POST);
+echo "</pre>";
+
+if (empty($_POST['username']) || empty($_POST['password'])) {
+    // Ganti header() dengan die() untuk melihat pesan errornya
+    die("Error: Form mengirim data kosong. Periksa atribut 'name' pada input HTML Anda.");
 }
 
-echo "Data POST Username: " . ($_POST['username'] ?? 'KOSONG') . "<br>";
+$username = mysqli_real_escape_string($conn, $_POST['username']);
+$password = md5($_POST['password']);
 
-// Hentikan proses di sini agar tidak reload
-die("Selesai mengecek. Jika Anda melihat ini, berarti PHP berjalan. Jika halaman langsung putih/reload, ada error di konfigurasi Vercel.");
+$query  = "SELECT * FROM user WHERE username='$username' AND password='$password' LIMIT 1";
+$result = mysqli_query($conn, $query);
+
+// CEK 2: Apakah query berhasil atau error?
+if (!$result) {
+    die("Query Error: " . mysqli_error($conn));
+}
+
+$cek = mysqli_num_rows($result);
+echo "Jumlah user ditemukan: " . $cek . "<br>";
+
+if ($cek > 0) {
+    echo "Login Berhasil! Data user ada.";
+    // header("Location: dashboard.php"); // Matikan sementara
+} else {
+    die("Login Gagal: Username atau Password salah di database.");
+}
+exit;
