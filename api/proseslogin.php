@@ -30,20 +30,16 @@ if ($result && mysqli_num_rows($result) > 0) {
     $_SESSION['role']  = $user['role'];
 
     // Set Cookie sebagai cadangan permanen untuk Vercel
-    setcookie("user_login", "true", time() + 3600, "/");
-    setcookie("user_nama", $user['nama'], time() + 3600, "/");
+    setcookie("login_session", "true", time() + 3600, "/"); 
+    setcookie("login_name", $user['nama'], time() + 3600, "/");
 
-    // Tutup sesi untuk memastikan data tersimpan
-    session_write_close();
+    session_write_close(); // Paksa simpan sesi
 
-    // Force Redirect menggunakan HTML Meta dan JS
-    echo "<html><head>
-          <meta http-equiv='refresh' content='0;url=dashboard.php'>
-          </head><body>
-          <script type='text/javascript'>
+    echo "<html><body>
+          <script>
+            alert('Login Berhasil!');
             window.location.replace('dashboard.php');
           </script>
-          <p>Login Berhasil! Mengalihkan ke dashboard... <a href='dashboard.php'>Klik di sini jika tidak otomatis</a></p>
           </body></html>";
     exit;
 } else {
