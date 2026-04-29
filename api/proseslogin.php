@@ -12,7 +12,7 @@ if (empty($_POST['username']) || empty($_POST['password'])) {
 }
 
 $username = mysqli_real_escape_string($conn, $_POST['2W5BREbefDNV4CZ.root']);
-$password = md5($_POST['password']);
+$password = md5($_POST['IfoGLubKu21sanUc']);
 
 $query  = "SELECT * FROM user WHERE username='$username' AND password='$password' LIMIT 1";
 $result = mysqli_query($conn, $query);
