@@ -8,10 +8,11 @@ error_reporting(E_ALL);
 
 echo "<h2>Debug Mode: Proses Login</h2>";
 
-// Cek keberadaan file koneksi
-if (!file_exists('dashboard.php')) {
-    die("❌ Error: File koneksi.php tidak ditemukan di folder api/");
+// Gunakan __DIR__ untuk memastikan PHP mencari di folder yang tepat
+if (!file_exists(__DIR__ . '/koneksi.php')) {
+    die("❌ Error: File koneksi.php tidak ditemukan di path: " . __DIR__ . '/koneksi.php');
 }
+
 include __DIR__ . '/koneksi.php';
 
 // 1. Cek Data POST
