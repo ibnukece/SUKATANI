@@ -1,29 +1,44 @@
 <?php
 /* ============================================================
-   api/dashboard.php — Dashboard SUKATANI (Vercel Session Fix)
+   api/dashboard.php — Dashboard SUKATANI (Vercel Fix)
    ============================================================ */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// ── FIX: Cek Sesi atau Cookie cadangan ──
-// Vercel sering menghapus sesi PHP, jadi kita cek Cookie 'login_session' yang dibuat di proseslogin.php
+// 1. Cek Sesi atau Cookie cadangan
 $is_logged_in = isset($_SESSION['login']) || (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === "true");
 
 if (!$is_logged_in) {
-    // Jika benar-benar tidak ada bukti login, arahkan kembali ke login
     header("Location: login.php?error=Sesi habis, silakan login kembali");
     exit;
 }
 
-// ── FIX: Ambil data user dari Sesi atau Cookie ──
+// 2. Ambil data user
 $nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : (isset($_COOKIE['login_name']) ? $_COOKIE['login_name'] : "User");
 $role_user = isset($_SESSION['role']) ? $_SESSION['role'] : "peminjam";
 
-// ── Panggil api.php — semua variabel BPS siap dipakai ──
-include_once __DIR__ . '/api.php'; 
+// 3. Pastikan file api.php (koneksi) dipanggil dengan benar
+// Gunakan __DIR__ untuk memastikan path absolut di Vercel
+$path_api = __DIR__ . '/api.php';
+if (file_exists($path_api)) {
+    include_once $path_api;
+} else {
+    // Jika api.php tidak ada, coba panggil koneksi.php langsung sebagai cadangan
+    include_once __DIR__ . '/koneksi.php';
+}
 
-// ── Cek tabel peminjaman ──
+// 4. Validasi variabel koneksi $conn
+if (!isset($conn) || $conn === null) {
+    // Jika masih null, coba gunakan variabel $koneksi (siapa tahu namanya berbeda)
+    if (isset($koneksi)) {
+        $conn = $koneksi;
+    } else {
+        die("❌ Error: Koneksi database ($conn) tidak ditemukan. Periksa file koneksi.php atau api.php");
+    }
+}
+
+// 5. Cek tabel peminjaman
 $tabel_ada        = mysqli_query($conn, "SHOW TABLES LIKE 'peminjaman'");
 $result           = false;
 $total_peminjaman = 0;
@@ -31,7 +46,6 @@ $total_alat       = 0;
 $last_tanggal     = '-';
 
 if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
-
     $result = mysqli_query($conn, "SELECT * FROM peminjaman ORDER BY tanggal_pinjam DESC");
     $total_peminjaman = ($result) ? mysqli_num_rows($result) : 0;
 
