@@ -1,41 +1,26 @@
 <?php
 session_start();
+
+// Matikan redirect otomatis agar kita bisa baca error
+// error_reporting diaktifkan penuh
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+echo "Memulai pengecekan...<br>";
+
+if (!file_exists('koneksi.php')) {
+    die("Error: File koneksi.php tidak ditemukan di folder api/");
+}
 
 include 'koneksi.php';
 
-if (empty($_POST['username']) || empty($_POST['password'])) {
-    header("Location: login.php?error=Username dan password wajib diisi");
-    exit;
-}
-
-// PASTIKAN 'username' dan 'password' sesuai dengan <input name="..."> di form HTML
-$username = mysqli_real_escape_string($conn, $_POST['username']); 
-$password = md5($_POST['password']); 
-
-$query  = "SELECT * FROM user WHERE username='$username' AND password='$password' LIMIT 1";
-$result = mysqli_query($conn, $query);
-
-// Tambahkan pengecekan jika query gagal
-if (!$result) {
-    die("Query Error: " . mysqli_error($conn));
-}
-
-$cek = mysqli_num_rows($result);
-
-if ($cek > 0) {
-    $user = mysqli_fetch_assoc($result);
-    $_SESSION['login'] = true;
-    $_SESSION['id']    = $user['id'];
-    $_SESSION['nama']  = $user['nama'];
-    $_SESSION['role']  = $user['role'];
-
-    header("Location: dashboard.php");
-    exit;
+if (isset($conn)) {
+    echo "Variabel koneksi (\$conn) berhasil ditemukan.<br>";
 } else {
-    header("Location: login.php?error=Username atau password salah");
-    exit;
+    die("Error: Variabel \$conn tetap NULL. Periksa isi koneksi.php");
 }
-?>
+
+echo "Data POST Username: " . ($_POST['username'] ?? 'KOSONG') . "<br>";
+
+// Hentikan proses di sini agar tidak reload
+die("Selesai mengecek. Jika Anda melihat ini, berarti PHP berjalan. Jika halaman langsung putih/reload, ada error di konfigurasi Vercel.");
