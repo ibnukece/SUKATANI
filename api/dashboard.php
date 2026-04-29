@@ -1,6 +1,6 @@
 <?php
 /* ============================================================
-   api/dashboard.php — Dashboard SUKATANI (Vercel Fix)
+   api/dashboard.php — Dashboard SUKATANI (Final Vercel Fix)
    ============================================================ */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -18,27 +18,27 @@ if (!$is_logged_in) {
 $nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : (isset($_COOKIE['login_name']) ? $_COOKIE['login_name'] : "User");
 $role_user = isset($_SESSION['role']) ? $_SESSION['role'] : "peminjam";
 
-// 3. Pastikan file api.php (koneksi) dipanggil dengan benar
-// Gunakan __DIR__ untuk memastikan path absolut di Vercel
+// 3. Panggil Koneksi & API secara eksplisit (Penting untuk Vercel)
+// Kita panggil koneksi.php lebih dulu agar variabel $conn terdefinisi sebelum api.php
+require_once __DIR__ . '/koneksi.php';
+
+// Pastikan variabel koneksi menggunakan nama $conn
+if (!isset($conn) && isset($koneksi)) {
+    $conn = $koneksi;
+}
+
+// Panggil api.php (Data BPS)
 $path_api = __DIR__ . '/api.php';
 if (file_exists($path_api)) {
     include_once $path_api;
-} else {
-    // Jika api.php tidak ada, coba panggil koneksi.php langsung sebagai cadangan
-    include_once __DIR__ . '/koneksi.php';
 }
 
-// 4. Validasi variabel koneksi $conn
+// 4. Validasi variabel koneksi $conn sebelum query
 if (!isset($conn) || $conn === null) {
-    // Jika masih null, coba gunakan variabel $koneksi (siapa tahu namanya berbeda)
-    if (isset($koneksi)) {
-        $conn = $koneksi;
-    } else {
-        die("❌ Error: Koneksi database ($conn) tidak ditemukan. Periksa file koneksi.php atau api.php");
-    }
+    die("❌ Error: Koneksi database tidak ditemukan. Periksa file koneksi.php");
 }
 
-// 5. Cek tabel peminjaman
+// 5. Logika Data Peminjaman Lokal
 $tabel_ada        = mysqli_query($conn, "SHOW TABLES LIKE 'peminjaman'");
 $result           = false;
 $total_peminjaman = 0;
@@ -70,7 +70,7 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
     <title>Dashboard – SUKATANI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/dashboard.css"> <!-- ✅ assets tetap ../ karena beda folder -->
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
     <style>
         .bps-section  { margin-top: 2rem; }
         .bps-badge    {
@@ -104,13 +104,13 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
     <nav class="sidebar-nav">
         <a href="dashboard.php" class="nav-item active">📊 Dashboard</a>
 
-        <?php if ($_SESSION['role'] === 'admin'): ?>
+        <?php if ($role_user === 'admin'): ?>
             <a href="kelola.php" class="nav-item">⚙️ Kelola Data</a>
         <?php else: ?>
             <a href="alat.php" class="nav-item">🚜 Pinjam Alat</a>
         <?php endif; ?>
     </nav>
-    <a href="logout.php" class="btn-logout">Keluar →</a>  <!-- ✅ was: '../auth/logout.php' -->
+    <a href="logout.php" class="btn-logout">Keluar →</a>
 </aside>
 
 <!-- MAIN CONTENT -->
@@ -175,7 +175,7 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if ($result && $total_peminjaman > 0):
+                        <?php if ($result && $total_peminjaman > 0): 
                             mysqli_data_seek($result, 0);
                             $no = 1;
                             while ($row = mysqli_fetch_assoc($result)): ?>
@@ -186,7 +186,7 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
                                 <td><?= $row['tanggal_pinjam']; ?></td>
                                 <td><?= $row['lama_pinjam']; ?> hari</td>
                             </tr>
-                            <?php endwhile;
+                            <?php endwhile; 
                         else: ?>
                             <tr>
                                 <td colspan="5" class="empty-state">🌱 Belum ada data peminjaman.</td>
@@ -200,16 +200,16 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
         <!-- ══ TABEL DATA BPS — dari api.php ══ -->
         <div class="table-card bps-section">
             <div class="table-header">
-                <h2 class="table-title">📊 <?= htmlspecialchars($bps_title); ?></h2>
+                <h2 class="table-title">📊 <?= isset($bps_title) ? htmlspecialchars($bps_title) : 'Data Sektoral'; ?></h2>
                 <div class="right-meta">
                     <span class="bps-badge">📡 Sumber: BPS Indonesia</span>
-                    <?php if ($bps_satuan): ?>
+                    <?php if (isset($bps_satuan) && $bps_satuan): ?>
                         <span style="font-size:0.75rem;color:#888;">Satuan: <?= htmlspecialchars($bps_satuan); ?></span>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <?php if ($bps_ok): ?>
+            <?php if (isset($bps_ok) && $bps_ok): ?>
                 <div class="table-wrap">
                     <table>
                         <thead>
@@ -225,8 +225,8 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
                             <tr>
                                 <td><?= $no++; ?></td>
                                 <td><?= htmlspecialchars($row['label']); ?></td>
-                                <td><?= is_numeric($row['nilai'])
-                                        ? number_format((float)$row['nilai'], 0, ',', '.')
+                                <td><?= is_numeric($row['nilai']) 
+                                        ? number_format((float)$row['nilai'], 0, ',', '.') 
                                         : htmlspecialchars((string)$row['nilai']); ?>
                                 </td>
                                 <td><?= htmlspecialchars($row['unit']); ?></td>
@@ -235,12 +235,12 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
                         </tbody>
                     </table>
                 </div>
-                <?php if ($bps_note): ?>
+                <?php if (isset($bps_note) && $bps_note): ?>
                     <p class="bps-note">📌 <?= nl2br(htmlspecialchars(strip_tags($bps_note))); ?></p>
                 <?php endif; ?>
 
             <?php else: ?>
-                <div class="bps-error">  <!-- ✅ FIX: div ini hilang di versi lama -->
+                <div class="bps-error">
                     ⚠️ <strong>Data BPS tidak dapat dimuat.</strong><br>
                     Pastikan server bisa mengakses internet dan API key valid.<br>
                     Cek juga apakah ekstensi <code>curl</code> aktif di PHP.
