@@ -1,20 +1,16 @@
 <?php
-// Data dari TiDB Cloud
 $host = 'gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com';
 $port = 4000;
 $user = '2W5BREbefDNV4CZ.root';
 $pass = 'IfoGLubKu21sanUc';
 $db   = 'sukatani';
 
-// Inisialisasi mysqli
-$koneksi = mysqli_init();
+$conn = mysqli_init(); // Ganti $koneksi menjadi $conn
 
-// Menambahkan pengaturan SSL (Wajib untuk TiDB Serverless)
-mysqli_ssl_set($koneksi, NULL, NULL, NULL, NULL, NULL);
+mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
 
-// Melakukan koneksi
 $real_connect = mysqli_real_connect(
-    $koneksi, 
+    $conn, 
     $host, 
     $user, 
     $pass, 
