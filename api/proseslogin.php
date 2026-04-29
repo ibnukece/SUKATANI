@@ -49,6 +49,6 @@ if ($cek > 0) {
     exit;
 } else {
     // Jika user tidak ditemukan
-    header("Location: login.php?error=Username atau password salah");
+    header("Location: dashboard.php");
     exit;
 }
