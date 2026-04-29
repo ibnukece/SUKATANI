@@ -57,17 +57,16 @@ if ($cek > 0) {
     $_SESSION['nama']  = $user['nama'];
     $_SESSION['role']  = $user['role'];
 
-    // Simpan session secara eksplisit sebelum redirect (Penting untuk Vercel)
+    setcookie("user_login", "true", time() + 3600, "/");
+    setcookie("user_nama", $user['nama'], time() + 3600, "/");
+
     session_write_close();
-   echo "<script>
+    echo "<script>
         alert('Login Berhasil!');
         window.location.href = 'dashboard.php';
     </script>";
     exit;
-
-    // 7. Redirect ke Dashboard
-    header("Location: dashboard.php");
-    exit;
+}
 } else {
     // Jika user tidak ditemukan, arahkan kembali ke login dengan pesan error
     header("Location: login.php?error=Username atau password salah");
