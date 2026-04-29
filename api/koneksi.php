@@ -1,18 +1,30 @@
 <?php
-/* ============================================================
-   config/koneksi.php — Koneksi Database SUKATANI
-   ============================================================ */
+// Data dari TiDB Cloud
+$host = 'gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com';
+$port = 4000 ;
+$user = '2W5BREbefDNV4CZ.root';
+$pass = 'IfoGLubKu21sanUc';
+$db   = 'sukatani';
 
-$host     = 'localhost';
-$user     = 'root';
-$password = '';
-$database = 'sukatani';
+// Inisialisasi mysqli
+$koneksi = mysqli_init();
 
-$conn = mysqli_connect($host, $user, $password, $database);
+// Menambahkan pengaturan SSL (Wajib untuk TiDB Serverless)
+mysqli_ssl_set($koneksi, NULL, NULL, NULL, NULL, NULL);
 
-if (!$conn) {
-    die("Koneksi database gagal: " . mysqli_connect_error());
+// Melakukan koneksi
+$real_connect = mysqli_real_connect(
+    $koneksi, 
+    $host, 
+    $user, 
+    $pass, 
+    $db, 
+    $port, 
+    NULL, 
+    MYSQLI_CLIENT_SSL
+);
+
+if (!$real_connect) {
+    die("Koneksi ke TiDB Cloud gagal: " . mysqli_connect_error());
 }
-
-mysqli_set_charset($conn, 'utf8');
 ?>
