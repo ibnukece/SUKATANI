@@ -59,6 +59,11 @@ if ($cek > 0) {
 
     // Simpan session secara eksplisit sebelum redirect (Penting untuk Vercel)
     session_write_close();
+   echo "<script>
+        alert('Login Berhasil!');
+        window.location.href = 'dashboard.php';
+    </script>";
+    exit;
 
     // 7. Redirect ke Dashboard
     header("Location: dashboard.php");
