@@ -10,8 +10,6 @@ if (!isset($conn)) {
     die("❌ Error: Koneksi database belum terdefinisi.");
 }
 
-session_start();
-
 // Menggunakan path absolut agar aman di Vercel
 include_once __DIR__ . '/koneksi.php';
 
