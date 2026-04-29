@@ -45,10 +45,10 @@ if ($cek > 0) {
     $_SESSION['role']  = $user['role'];
 
     // 5. Redirect ke Dashboard
-    header("Location: dashboard.php");
+    header("Location:dashboard.php");
     exit;
 } else {
     // Jika user tidak ditemukan
-    header("Location: dashboard.php");
+    header("Location:dashboard.php");
     exit;
 }
