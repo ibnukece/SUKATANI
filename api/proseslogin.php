@@ -1,17 +1,16 @@
 <?php
 session_start();
-
-// Paksa error muncul di layar
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-echo "<h2>Debug Mode: Proses Login</h2>";
+// Pastikan path ke koneksi.php benar
+include_once __DIR__ . '/koneksi.php';
 
-// Gunakan __DIR__ untuk memastikan PHP mencari di folder yang tepat
-if (!file_exists(__DIR__ . '/koneksi.php')) {
-    die("❌ Error: File koneksi.php tidak ditemukan di path: " . __DIR__ . '/koneksi.php');
+if (!isset($conn)) {
+    die("❌ Error: Koneksi database belum terdefinisi.");
 }
+
+// ... lanjut ke logika login Anda
 
 include __DIR__ . '/koneksi.php';
 
