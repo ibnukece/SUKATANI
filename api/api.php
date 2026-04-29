@@ -1,4 +1,5 @@
 <?php
+include_once __DIR__ . '/koneksi.php';
 /* ============================================================
    api/api.php — Handler BPS API untuk SUKATANI
    Dipanggil dari api/dashboard.php via include 'api.php'
