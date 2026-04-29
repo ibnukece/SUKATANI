@@ -1,6 +1,10 @@
 <?php
 session_start();
-include 'koneksi.php'; 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+include 'koneksi.php';
 
 if (empty($_POST['username']) || empty($_POST['password'])) {
     header("Location: login.php?error=Username dan password wajib diisi");
