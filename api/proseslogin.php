@@ -1,48 +1,57 @@
 <?php
-
 session_start();
 
-// Aktifkan error reporting agar jika ada masalah koneksi langsung terlihat
+// Paksa error muncul di layar
 ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-include 'koneksi.php'; 
+echo "<h2>Debug Mode: Proses Login</h2>";
 
-// 1. Pastikan data tidak kosong
+// Cek keberadaan file koneksi
+if (!file_exists('koneksi.php')) {
+    die("❌ Error: File koneksi.php tidak ditemukan di folder api/");
+}
+include 'koneksi.php';
+
+// 1. Cek Data POST
+echo "<b>1. Data POST yang diterima:</b><pre>";
+print_r($_POST);
+echo "</pre>";
+
 if (empty($_POST['username']) || empty($_POST['password'])) {
-    header("Location: login.php?error=Username dan password wajib diisi");
+    echo "❌ Masalah: Data username atau password kosong di sistem PHP.<br>";
+    echo "Pastikan di login.php, tag input memiliki name='username' dan name='password'.";
     exit;
 }
 
-// 2. Ambil data dari form (Sesuaikan dengan atribut 'name' di login.php)
-$username = mysqli_real_escape_string($conn, $_POST['username']);
-$password = md5($_POST['password']); // Sesuaikan jika database menggunakan hash lain
+// 2. Cek Koneksi Database
+if (!isset($conn)) {
+    die("❌ Error: Variabel \$conn tidak terbaca. Pastikan di koneksi.php namanya \$conn, bukan \$koneksi.");
+}
+echo "✅ Koneksi database terdeteksi.<br>";
 
-// 3. Query ke Database
-$query  = "SELECT * FROM user WHERE username='$username' AND password='$password' LIMIT 1";
+// 3. Tes Query
+$user_input = mysqli_real_escape_string($conn, $_POST['username']);
+$pass_input = md5($_POST['password']);
+
+$query  = "SELECT * FROM user WHERE username='$user_input' AND password='$pass_input' LIMIT 1";
+echo "<b>2. Query yang dijalankan:</b> <code>$query</code><br>";
+
 $result = mysqli_query($conn, $query);
 
 if (!$result) {
-    // Jika query gagal, tampilkan errornya
-    die("Query ke TiDB Cloud Gagal: " . mysqli_error($conn));
+    die("❌ Query Error: " . mysqli_error($conn));
 }
 
 $cek = mysqli_num_rows($result);
+echo "<b>3. Hasil:</b> Ditemukan $cek user.<br><br>";
 
 if ($cek > 0) {
-    $user = mysqli_fetch_assoc($result);
-
-    $_SESSION['login'] = true;
-    $_SESSION['id']    = $user['id'];
-    $_SESSION['nama']  = $user['nama'];
-    $_SESSION['role']  = $user['role'];
-
-    // 4. Arahkan ke Dashboard
-    header("Location: dashboard.php");
-    exit;
+    echo "✅ Login BERHASIL. Jika tidak ada debug ini, Anda seharusnya sudah di dashboard.";
 } else {
-    // Jika user tidak ditemukan
-    header("Location: login.php?error=Username atau password salah");
-    exit;
+    echo "❌ Login GAGAL: Username atau Password tidak cocok dengan data di TiDB Cloud.";
 }
-?>
+
+echo "<br><br><a href='dashboard.php'>Kembali ke Login</a>";
+exit;
