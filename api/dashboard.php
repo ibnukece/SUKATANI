@@ -1,8 +1,12 @@
 <?php
-if (!isset($_SESSION['login'])) {
-    echo "Sesi tidak ditemukan. Data Sesi: ";
-    print_r($_SESSION);
-    die("<br><a href='login.php'>Kembali ke Login</a>");
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Cek apakah sesi login benar-benar ada
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
+    // Jika tidak ada sesi, kita gunakan debug dulu untuk melihat apa yang salah
+    die("Sesi tidak ditemukan. Silakan <a href='login.php'>Login kembali</a>.");
 }
 
 $nama_user = $_SESSION['nama'];
