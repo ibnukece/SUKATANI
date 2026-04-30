@@ -5,10 +5,14 @@
 session_start();
 require_once 'koneksi.php'; 
 
-// Proteksi halaman — Jika session gagal, kita beri bypass sementara agar tidak logout
+/**
+ * LOGIKA ANTI-TENDANG VERCEL
+ * Jika session hilang/terhapus server, kita buatkan session baru 
+ * supaya proses testing tidak terganggu halaman login.
+ */
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     $_SESSION['login'] = true;
-    $_SESSION['nama']  = "User"; 
+    $_SESSION['nama']  = "User Test"; 
     $_SESSION['role']  = "user";
 }
 
@@ -18,11 +22,13 @@ $error     = '';
 
 // PROSES SIMPAN DATA KE TiDB
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Pastikan koneksi aman
     $nama_peminjam  = trim(mysqli_real_escape_string($conn, $_POST['nama']));
     $nama_alat      = mysqli_real_escape_string($conn, $_POST['alat']);
     $tanggal_pinjam = $_POST['tanggal'];
     $lama_pinjam    = intval($_POST['lama']);
 
+    // Query INSERT (Pastikan tabel sudah di-DROP & CREATE ulang dengan AUTO_INCREMENT)
     $query = "INSERT INTO peminjaman (nama_peminjam, nama_alat, tanggal_pinjam, lama_pinjam) VALUES (?, ?, ?, ?)";
     $stmt  = mysqli_prepare($conn, $query);
 
@@ -30,10 +36,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         mysqli_stmt_bind_param($stmt, "sssi", $nama_peminjam, $nama_alat, $tanggal_pinjam, $lama_pinjam);
 
         if (mysqli_stmt_execute($stmt)) {
+            // Berhasil simpan, langsung ke dashboard
             echo "<script>alert('Peminjaman Berhasil Disimpan!'); window.location='dashboard.php';</script>";
             exit;
         } else {
-            $error = "Gagal eksekusi: " . mysqli_stmt_error($stmt);
+            $error = "Gagal simpan ke database: " . mysqli_stmt_error($stmt);
         }
         mysqli_stmt_close($stmt);
     } else {
