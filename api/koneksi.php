@@ -27,4 +27,11 @@ $real_connect = mysqli_real_connect(
 if (!$real_connect) {
     die("Koneksi ke TiDB Cloud gagal: " . mysqli_connect_error());
 }
+
+/* 
+   TAMBAHKAN BARIS INI:
+   Ini berfungsi agar semua file (seperti prosesregister.php) yang memanggil 
+   variabel $conn tidak error, karena dialiaskan ke variabel $koneksi.
+*/
+$conn = $koneksi; 
 ?>

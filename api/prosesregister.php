@@ -2,7 +2,12 @@
 /* ============================================================
    api/prosesregister.php — Proses Pendaftaran Akun Baru
    ============================================================ */
-include 'koneksi.php';
+// Menggunakan require_once agar lebih pasti file terpanggil
+require_once 'koneksi.php';
+
+// PERBAIKAN: Sinkronisasi variabel koneksi
+// Jika di koneksi.php menggunakan $koneksi, kita buat alias $conn agar kode di bawah tidak error
+$conn = $koneksi;
 
 // Validasi input kosong
 if (
@@ -11,6 +16,7 @@ if (
     empty($_POST['password']) ||
     empty($_POST['confirm'])
 ) {
+    // PERBAIKAN: Sesuaikan dengan nama file Register.php (R Kapital)
     header("Location: Register.php?error=Semua field wajib diisi");
     exit;
 }
@@ -33,8 +39,10 @@ if (strlen($password) < 6) {
 }
 
 // Cek username sudah dipakai — pakai prepared statement
+// PERBAIKAN: Pastikan nama tabel Anda benar (apakah 'user' atau 'users'?)
 $stmt = mysqli_prepare($conn, "SELECT id FROM user WHERE username = ? LIMIT 1");
 if (!$stmt) {
+    // Jika error di sini, kemungkinan besar nama tabel 'user' salah atau koneksi gagal
     header("Location: Register.php?error=Terjadi kesalahan sistem (prepare)");
     exit;
 }
@@ -64,6 +72,7 @@ $result = mysqli_stmt_execute($insert);
 mysqli_stmt_close($insert);
 
 if ($result) {
+    // PERBAIKAN: Sesuaikan dengan nama file login.php di folder Anda
     header("Location: login.php?success=Akun berhasil dibuat! Silakan login.");
     exit;
 } else {
