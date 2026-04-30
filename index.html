@@ -1,8 +1,11 @@
 <?php
+/* ============================================================
+   index.php — Halaman Utama (Landing Page) SUKATANI
+   ============================================================ */
 session_start();
-// Kalau sudah login, langsung ke dashboard
+
+// Jika user sudah login, arahkan ke dashboard yang ada di dalam folder api/
 if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
-    // Pastikan path ini sesuai dengan struktur folder Vercel Anda
     header("Location: api/dashboard.php");
     exit;
 }
