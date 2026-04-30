@@ -2,12 +2,27 @@
 /* ============================================================
    api/prosesregister.php — Proses Pendaftaran Akun Baru
    ============================================================ */
-// Menggunakan require_once agar lebih pasti file terpanggil
-require_once 'koneksi.php';
 
-// PERBAIKAN: Sinkronisasi variabel koneksi
-// Jika di koneksi.php menggunakan $koneksi, kita buat alias $conn agar kode di bawah tidak error
-$conn = $koneksi;
+// 1. Gunakan path absolut dengan __DIR__ agar Vercel tidak tersesat mencari file
+require_once __DIR__ . '/koneksi.php';
+
+/**
+ * PERBAIKAN KRUSIAL:
+ * Kita cek apakah $koneksi (dari koneksi.php) tersedia. 
+ * Jika tidak, kita coba ambil dari $conn.
+ */
+$db_conn = null;
+
+if (isset($koneksi) && $koneksi instanceof mysqli) {
+    $db_conn = $koneksi;
+} elseif (isset($conn) && $conn instanceof mysqli) {
+    $db_conn = $conn;
+}
+
+// Jika masih null, berarti koneksi.php gagal total dimuat
+if (!$db_conn) {
+    die("Error: Koneksi database tidak tersedia. Pastikan api/koneksi.php benar.");
+}
 
 // Validasi input kosong
 if (
@@ -16,7 +31,6 @@ if (
     empty($_POST['password']) ||
     empty($_POST['confirm'])
 ) {
-    // PERBAIKAN: Sesuaikan dengan nama file Register.php (R Kapital)
     header("Location: Register.php?error=Semua field wajib diisi");
     exit;
 }
@@ -38,12 +52,10 @@ if (strlen($password) < 6) {
     exit;
 }
 
-// Cek username sudah dipakai — pakai prepared statement
-// PERBAIKAN: Pastikan nama tabel Anda benar (apakah 'user' atau 'users'?)
-$stmt = mysqli_prepare($conn, "SELECT id FROM user WHERE username = ? LIMIT 1");
+// Cek username sudah dipakai — menggunakan variabel $db_conn yang sudah dipastikan ada
+$stmt = mysqli_prepare($db_conn, "SELECT id FROM user WHERE username = ? LIMIT 1");
 if (!$stmt) {
-    // Jika error di sini, kemungkinan besar nama tabel 'user' salah atau koneksi gagal
-    header("Location: Register.php?error=Terjadi kesalahan sistem (prepare)");
+    header("Location: Register.php?error=Terjadi kesalahan sistem (prepare check)");
     exit;
 }
 mysqli_stmt_bind_param($stmt, 's', $username);
@@ -57,14 +69,14 @@ if (mysqli_stmt_num_rows($stmt) > 0) {
 }
 mysqli_stmt_close($stmt);
 
-// Hash password dengan bcrypt (aman)
+// Hash password dengan bcrypt
 $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
-// Simpan ke database — pakai prepared statement
+// Simpan ke database
 $role = 'user';
-$insert = mysqli_prepare($conn, "INSERT INTO user (nama, username, password, role) VALUES (?, ?, ?, ?)");
+$insert = mysqli_prepare($db_conn, "INSERT INTO user (nama, username, password, role) VALUES (?, ?, ?, ?)");
 if (!$insert) {
-    header("Location: Register.php?error=Terjadi kesalahan sistem (insert)");
+    header("Location: Register.php?error=Terjadi kesalahan sistem (prepare insert)");
     exit;
 }
 mysqli_stmt_bind_param($insert, 'ssss', $nama, $username, $passwordHash, $role);
@@ -72,7 +84,6 @@ $result = mysqli_stmt_execute($insert);
 mysqli_stmt_close($insert);
 
 if ($result) {
-    // PERBAIKAN: Sesuaikan dengan nama file login.php di folder Anda
     header("Location: login.php?success=Akun berhasil dibuat! Silakan login.");
     exit;
 } else {
