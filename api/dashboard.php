@@ -103,10 +103,10 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
 
         <?php if (strtolower(trim($role_user)) === 'admin'): ?>
             <!-- ✅ Menu Admin -->
-            <a href="/kelola.php" class="nav-item">⚙️ Kelola Data</a>
+            <a href="api/kelola.php" class="nav-item">⚙️ Kelola Data</a>
         <?php else: ?>
             <!-- Menu User/Peminjam -->
-            <a href="/alat.php" class="nav-item">🚜 Pinjam Alat</a>
+            <a href="api/alat.php" class="nav-item">🚜 Pinjam Alat</a>
         <?php endif; ?>
     </nav>
     <a href="logout.php" class="btn-logout">Keluar →</a>
