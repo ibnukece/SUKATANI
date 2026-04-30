@@ -1,28 +1,27 @@
 <?php
 /* ============================================================
-   api/dashboard.php — Dashboard SUKATANI (Final Vercel Fix)
+   api/dashboard.php — Dashboard SUKATANI
    ============================================================ */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 1. Cek Sesi atau Cookie cadangan
-$is_logged_in = isset($_SESSION['login']) || (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === "true");
+// 1. Cek login via session ATAU cookie cadangan
+$is_logged_in = isset($_SESSION['login']) || 
+                (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === "true");
 
 if (!$is_logged_in) {
     header("Location: login.php?error=Sesi habis, silakan login kembali");
     exit;
 }
 
-// 2. Ambil data user
-$nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : (isset($_COOKIE['login_name']) ? $_COOKIE['login_name'] : "User");
-$role_user = isset($_SESSION['role']) ? $_SESSION['role'] : "peminjam";
+// 2. Ambil data user — prioritaskan session, fallback ke cookie
+$nama_user = $_SESSION['nama'] ?? $_COOKIE['login_name'] ?? "User";
+$role_user = $_SESSION['role'] ?? $_COOKIE['login_role'] ?? "peminjam"; // ✅ baca login_role dari cookie
 
-// 3. Panggil Koneksi & API secara eksplisit (Penting untuk Vercel)
-// Kita panggil koneksi.php lebih dulu agar variabel $conn terdefinisi sebelum api.php
+// 3. Koneksi database
 require_once __DIR__ . '/koneksi.php';
 
-// Pastikan variabel koneksi menggunakan nama $conn
 if (!isset($conn) && isset($koneksi)) {
     $conn = $koneksi;
 }
@@ -33,12 +32,11 @@ if (file_exists($path_api)) {
     include_once $path_api;
 }
 
-// 4. Validasi variabel koneksi $conn sebelum query
 if (!isset($conn) || $conn === null) {
-    die("❌ Error: Koneksi database tidak ditemukan. Periksa file koneksi.php");
+    die("❌ Error: Koneksi database tidak ditemukan.");
 }
 
-// 5. Logika Data Peminjaman Lokal
+// 4. Ambil data peminjaman
 $tabel_ada        = mysqli_query($conn, "SHOW TABLES LIKE 'peminjaman'");
 $result           = false;
 $total_peminjaman = 0;
@@ -89,7 +87,6 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
             background: #fffbf0; border-radius: 8px;
             margin: 1rem; font-size: 0.88rem;
         }
-        .bps-error code { word-break: break-all; }
         .table-header .right-meta {
             display: flex; flex-direction: column;
             align-items: flex-end; gap: 4px;
@@ -104,9 +101,11 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
     <nav class="sidebar-nav">
         <a href="dashboard.php" class="nav-item active">📊 Dashboard</a>
 
-        <?php if ($role_user === 'admin'): ?>
+        <?php if (strtolower(trim($role_user)) === 'admin'): ?>
+            <!-- ✅ Menu Admin -->
             <a href="kelola.php" class="nav-item">⚙️ Kelola Data</a>
         <?php else: ?>
+            <!-- Menu User/Peminjam -->
             <a href="alat.php" class="nav-item">🚜 Pinjam Alat</a>
         <?php endif; ?>
     </nav>
@@ -157,11 +156,13 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
             </div>
         </div>
 
-        <!-- ══ TABEL PEMINJAMAN LOKAL ══ -->
+        <!-- TABEL PEMINJAMAN -->
         <div class="table-card">
             <div class="table-header">
                 <h2 class="table-title">📋 Data Peminjaman</h2>
-                <a href="alat.php" class="btn-tambah">+ Pinjam Alat</a>
+                <?php if (strtolower(trim($role_user)) !== 'admin'): ?>
+                    <a href="alat.php" class="btn-tambah">+ Pinjam Alat</a>
+                <?php endif; ?>
             </div>
             <div class="table-wrap">
                 <table>
@@ -197,7 +198,7 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
             </div>
         </div>
 
-        <!-- ══ TABEL DATA BPS — dari api.php ══ -->
+        <!-- TABEL DATA BPS -->
         <div class="table-card bps-section">
             <div class="table-header">
                 <h2 class="table-title">📊 <?= isset($bps_title) ? htmlspecialchars($bps_title) : 'Data Sektoral'; ?></h2>
@@ -238,12 +239,10 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
                 <?php if (isset($bps_note) && $bps_note): ?>
                     <p class="bps-note">📌 <?= nl2br(htmlspecialchars(strip_tags($bps_note))); ?></p>
                 <?php endif; ?>
-
             <?php else: ?>
                 <div class="bps-error">
                     ⚠️ <strong>Data BPS tidak dapat dimuat.</strong><br>
-                    Pastikan server bisa mengakses internet dan API key valid.<br>
-                    Cek juga apakah ekstensi <code>curl</code> aktif di PHP.
+                    Pastikan server bisa mengakses internet dan API key valid.
                 </div>
             <?php endif; ?>
             <?php if (!empty($bps_debug_html)) echo $bps_debug_html; ?>

@@ -2,11 +2,10 @@
 /* ============================================================
    api/Register.php — Halaman Register SUKATANI
    ============================================================ */
-session_start();
 
-// Kalau sudah login, redirect ke dashboard
-if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
-    header("Location: dashboard.php");  // ✅ was: '../dashboard/dashboard.php'
+// Cek login via cookie (session tidak bekerja di Vercel serverless)
+if (isset($_COOKIE['user_logged_in']) && $_COOKIE['user_logged_in'] === 'true') {
+    header("Location: dashboard.php");
     exit;
 }
 ?>
@@ -18,7 +17,7 @@ if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
     <title>Daftar – SUKATANI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/auth.css">  <!-- ✅ tetap ../ karena assets di luar api/ -->
+    <link rel="stylesheet" href="../assets/css/auth.css">
 </head>
 <body>
 
@@ -26,7 +25,7 @@ if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
 
     <!-- Panel Kiri -->
     <div class="auth-panel-left">
-        <a href="../index.php" class="brand">🌾 SUKATANI</a>  <!-- ✅ tetap ../ karena index.php di root -->
+        <a href="../index.php" class="brand">🌾 SUKATANI</a>
         <div class="panel-content">
             <h2>Bergabung<br>Sekarang!</h2>
             <p>Daftar gratis dan mulai kelola peminjaman alat pertanian Anda secara digital.</p>
@@ -39,13 +38,16 @@ if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
         <div class="auth-box">
             <h3>Buat Akun Baru</h3>
             <p class="auth-sub">Sudah punya akun? <a href="login.php">Masuk di sini</a></p>
-            <!-- ✅ sudah benar, sama folder -->
 
             <?php if (isset($_GET['error'])): ?>
                 <div class="alert alert-danger"><?= htmlspecialchars($_GET['error']); ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="prosesregister.php">  <!-- ✅ sudah benar, sama folder -->
+            <?php if (isset($_GET['success'])): ?>
+                <div class="alert alert-success"><?= htmlspecialchars($_GET['success']); ?></div>
+            <?php endif; ?>
+
+            <form method="POST" action="prosesregister.php">
                 <div class="form-group">
                     <label for="nama">Nama Lengkap</label>
                     <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
@@ -65,7 +67,7 @@ if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
                 <button type="submit" class="btn-auth">Daftar Sekarang →</button>
             </form>
 
-            <a href="../index.php" class="back-home">← Kembali ke Beranda</a>  <!-- ✅ tetap ../ -->
+            <a href="../index.php" class="back-home">← Kembali ke Beranda</a>
         </div>
     </div>
 
