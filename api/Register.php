@@ -2,7 +2,9 @@
 /* ============================================================
    api/Register.php — Halaman Register SUKATANI
    ============================================================ */
-if (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === 'true') {
+
+// Cek login via cookie (session tidak bekerja di Vercel serverless)
+if (isset($_COOKIE['user_logged_in']) && $_COOKIE['user_logged_in'] === 'true') {
     header("Location: dashboard.php");
     exit;
 }
@@ -18,7 +20,10 @@ if (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === 'true') {
     <link rel="stylesheet" href="../assets/css/auth.css">
 </head>
 <body>
+
 <div class="auth-wrapper">
+
+    <!-- Panel Kiri -->
     <div class="auth-panel-left">
         <a href="../index.php" class="brand">🌾 SUKATANI</a>
         <div class="panel-content">
@@ -27,6 +32,8 @@ if (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === 'true') {
         </div>
         <div class="panel-deco">🌱</div>
     </div>
+
+    <!-- Panel Kanan (Form) -->
     <div class="auth-panel-right">
         <div class="auth-box">
             <h3>Buat Akun Baru</h3>
@@ -34,6 +41,10 @@ if (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === 'true') {
 
             <?php if (isset($_GET['error'])): ?>
                 <div class="alert alert-danger"><?= htmlspecialchars($_GET['error']); ?></div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['success'])): ?>
+                <div class="alert alert-success"><?= htmlspecialchars($_GET['success']); ?></div>
             <?php endif; ?>
 
             <form method="POST" action="prosesregister.php">
@@ -47,7 +58,7 @@ if (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === 'true') {
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Minimal 6 karakter" required>
+                    <input type="password" id="password" name="password" placeholder="Buat password" required>
                 </div>
                 <div class="form-group">
                     <label for="confirm">Konfirmasi Password</label>
@@ -55,9 +66,12 @@ if (isset($_COOKIE['login_session']) && $_COOKIE['login_session'] === 'true') {
                 </div>
                 <button type="submit" class="btn-auth">Daftar Sekarang →</button>
             </form>
+
             <a href="../index.php" class="back-home">← Kembali ke Beranda</a>
         </div>
     </div>
+
 </div>
+
 </body>
 </html>
