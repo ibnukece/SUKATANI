@@ -2,6 +2,7 @@
 session_start();
 // Kalau sudah login, langsung ke dashboard
 if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
+    // Pastikan path ini sesuai dengan struktur folder Vercel Anda
     header("Location: api/dashboard.php");
     exit;
 }
@@ -28,7 +29,8 @@ if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
     </ul>
     <div class="nav-cta">
         <a href="api/login.php" class="btn-outline">Masuk</a>
-        <a href="api/register.php" class="btn-solid">Daftar Gratis</a>
+        <!-- PERBAIKAN: Huruf R Kapital sesuai gambar image_1bdeff.png -->
+        <a href="api/Register.php" class="btn-solid">Daftar Gratis</a>
     </div>
 </nav>
 
@@ -42,7 +44,8 @@ if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
         <h1>Pinjam Alat Tani dengan <em>Mudah Dan Cepat</em></h1>
         <p>SUKATANI hadir sebagai solusi digital peminjaman alat pertanian. Hemat waktu, transparan, dan dapat diakses kapan saja oleh seluruh anggota kelompok tani.</p>
         <div class="hero-buttons">
-            <a href="api/register.php" class="btn-hero-primary">Daftar Sekarang →</a>
+            <!-- PERBAIKAN: Huruf R Kapital -->
+            <a href="api/Register.php" class="btn-hero-primary">Daftar Sekarang →</a>
             <a href="api/login.php" class="btn-hero-secondary">Sudah punya akun?</a>
         </div>
     </div>
@@ -106,7 +109,8 @@ if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
     <h2 class="section-title">Siap Bertani Lebih Modern?</h2>
     <p>Daftar gratis dan mulai kelola peminjaman alat pertanian Anda secara digital hari ini juga.</p>
     <div class="cta-buttons">
-        <a href="api/register.php" class="btn-cta-primary">🌱 Daftar Gratis Sekarang</a>
+        <!-- PERBAIKAN: Huruf R Kapital -->
+        <a href="api/Register.php" class="btn-cta-primary">🌱 Daftar Gratis Sekarang</a>
         <a href="api/login.php" class="btn-cta-secondary">Masuk ke Akun Saya</a>
     </div>
 </section>
