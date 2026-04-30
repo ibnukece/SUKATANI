@@ -16,7 +16,7 @@ if (!$is_logged_in) {
 }
 
 // 2. Ambil data user — prioritaskan session, fallback ke cookie
-$nama_user = $_SESSION['nama'] ?? $_COOKIE['login_name'] ?? "User";
+$nama_user = $_SESSION['nama'] ?? $_COOKIE['login_name'] ?? "user";
 $role_user = $_SESSION['role'] ?? $_COOKIE['login_role'] ?? "peminjam"; // ✅ baca login_role dari cookie
 
 // 3. Koneksi database
@@ -102,11 +102,11 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
         <a href="dashboard.php" class="nav-item active">📊 Dashboard</a>
 
         <?php if (strtolower(trim($role_user)) === 'admin'): ?>
-            <!-- ✅ Menu Admin -->
-            <a href="/api/kelola.php" class="nav-item">⚙️ Kelola Data</a>
+            <!-- ✅ Menu admin -->
+            <a href="kelola.php" class="nav-item">⚙️ Kelola Data</a>
         <?php else: ?>
             <!-- Menu User/Peminjam -->
-            <a href="/api/alat.php" class="nav-item">🚜 Pinjam Alat</a>
+            <a href="alat.php" class="nav-item">🚜 Pinjam Alat</a>
         <?php endif; ?>
     </nav>
     <a href="logout.php" class="btn-logout">Keluar →</a>

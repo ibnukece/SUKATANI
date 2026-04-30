@@ -5,7 +5,7 @@
 session_start();
 include 'koneksi.php';          // ✅ was: '../config/koneksi.php'
 
-// Proteksi Admin
+// Proteksi admin
 if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
     header("Location: dashboard.php");  // ✅ sudah benar (sama folder)
     exit;
@@ -74,7 +74,7 @@ $count_aktif = ($q_p) ? mysqli_num_rows($q_p) : 0;
 <body>
 
 <aside class="sidebar">
-    <div class="sidebar-brand">🌾 SUKATANI ADMIN</div>
+    <div class="sidebar-brand">🌾 SUKATANI admin</div>
     <nav class="sidebar-nav">
         <a href="dashboard.php" class="nav-item">📊 Dashboard</a>
         <a href="kelola.php" class="nav-item active">⚙️ Kelola Data</a>
@@ -83,7 +83,7 @@ $count_aktif = ($q_p) ? mysqli_num_rows($q_p) : 0;
 </aside>
 
 <div class="main-wrap">
-    <header class="topbar"><h1 class="page-title">Sistem Kontrol Admin</h1></header>
+    <header class="topbar"><h1 class="page-title">Sistem Kontrol admin</h1></header>
 
     <main class="main-body">
         <?php if ($success): ?>
@@ -101,7 +101,7 @@ $count_aktif = ($q_p) ? mysqli_num_rows($q_p) : 0;
                 <input type="hidden" name="id_user" id="id_user">
                 <input type="text" name="nama" id="nama" placeholder="Nama Lengkap" required>
                 <input type="text" name="username" id="username" placeholder="Username" required>
-                <select name="role"><option value="user">User</option><option value="admin">Admin</option></select>
+                <select name="role"><option value="user">User</option><option value="admin">admin</option></select>
                 <button type="submit" name="simpan_user" class="btn-tambah" style="border:none; cursor:pointer;">Simpan User</button>
             </form>
             <div class="table-wrap">
