@@ -26,7 +26,7 @@ $connected = mysqli_real_connect(
     $db,
     $port,
     NULL,
-    MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT
+    MYSQLI_CLIENT_SSL
 );
 
 if (!$connected) {
