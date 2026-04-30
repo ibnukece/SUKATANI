@@ -8,65 +8,64 @@ while (ob_get_level()) ob_end_clean();
 include_once __DIR__ . '/koneksi.php';
 
 if (empty($_POST['username']) || empty($_POST['password'])) {
-    echo "<script>alert('Isi username dan password!'); window.location.href='login.php';</script>";
+    header("Location: login.php?error=Isi username dan password!");
     exit;
 }
 
-$username      = trim($_POST['username']);
+$username       = trim($_POST['username']);
 $password_input = $_POST['password'];
 
-// Pakai prepared statement — aman dari SQL Injection
-$stmt = mysqli_prepare($conn, "SELECT * FROM user WHERE username = ? LIMIT 1");
+// Prepared statement — tanpa mysqli_stmt_get_result (lebih kompatibel)
+$stmt = mysqli_prepare($conn, "SELECT id, nama, username, password, role FROM user WHERE username = ? LIMIT 1");
 if (!$stmt) {
-    echo "<script>alert('Terjadi kesalahan sistem!'); window.location.href='login.php';</script>";
+    header("Location: login.php?error=Terjadi kesalahan sistem");
     exit;
 }
+
 mysqli_stmt_bind_param($stmt, 's', $username);
 mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$user   = $result ? mysqli_fetch_assoc($result) : null;
+
+// Bind hasil ke variabel (tidak butuh mysqlnd)
+mysqli_stmt_bind_result($stmt, $uid, $nama, $uname, $hashed_pass, $role);
+$found = mysqli_stmt_fetch($stmt);
 mysqli_stmt_close($stmt);
 
-// Cek password: support bcrypt (baru) DAN md5 (lama)
 $password_valid = false;
-if ($user) {
-    if (password_verify($password_input, $user['password'])) {
-        // Password bcrypt (user baru)
+if ($found) {
+    if (password_verify($password_input, $hashed_pass)) {
+        // bcrypt (user baru)
         $password_valid = true;
-    } elseif ($user['password'] === md5($password_input)) {
-        // Password md5 (user lama) — upgrade otomatis ke bcrypt
+    } elseif ($hashed_pass === md5($password_input)) {
+        // md5 (user lama) — upgrade otomatis ke bcrypt
         $password_valid = true;
         $new_hash = password_hash($password_input, PASSWORD_BCRYPT);
         $upd = mysqli_prepare($conn, "UPDATE user SET password = ? WHERE id = ?");
-        mysqli_stmt_bind_param($upd, 'si', $new_hash, $user['id']);
-        mysqli_stmt_execute($upd);
-        mysqli_stmt_close($upd);
+        if ($upd) {
+            mysqli_stmt_bind_param($upd, 'si', $new_hash, $uid);
+            mysqli_stmt_execute($upd);
+            mysqli_stmt_close($upd);
+        }
     }
 }
 
-if ($password_valid && $user) {
+if ($password_valid) {
     // Set Session
     $_SESSION['login'] = true;
-    $_SESSION['id']    = $user['id'];
-    $_SESSION['nama']  = $user['nama'];
-    $_SESSION['role']  = $user['role'];
+    $_SESSION['id']    = $uid;
+    $_SESSION['nama']  = $nama;
+    $_SESSION['role']  = $role;
 
-    // ✅ Simpan role ke cookie sebagai cadangan (penting untuk Vercel)
-    $expire = time() + 3600;
-    setcookie("login_session", "true",        $expire, "/");
-    setcookie("login_name",    $user['nama'], $expire, "/");
-    setcookie("login_role",    $user['role'], $expire, "/"); // ← ini yang kurang sebelumnya
+    // ✅ Set cookie cadangan untuk Vercel (session tidak persist di serverless)
+    $expire = time() + 7200; // 2 jam
+    setcookie("login_session", "true",  $expire, "/", "", false, true);
+    setcookie("login_name",    $nama,   $expire, "/", "", false, true);
+    setcookie("login_role",    $role,   $expire, "/", "", false, true);
 
     session_write_close();
-
-    echo "<html><body>
-          <script>
-            window.location.replace('dashboard.php');
-          </script>
-          </body></html>";
+    header("Location: dashboard.php");
     exit;
 } else {
-    echo "<script>alert('Username atau Password Salah!'); window.location.href='login.php';</script>";
+    header("Location: login.php?error=Username atau Password Salah!");
     exit;
 }
 ?>
