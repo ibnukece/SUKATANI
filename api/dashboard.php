@@ -109,7 +109,7 @@ if ($tabel_ada && mysqli_num_rows($tabel_ada) > 0) {
             <a href="alat.php" class="nav-item">🚜 Pinjam Alat</a>
         <?php endif; ?>
     </nav>
-    <a href="index.html" class="btn-logout">Keluar →</a>
+   <a href="logout.php" class="btn-logout">Keluar →</a>
 </aside>
 
 <!-- MAIN CONTENT -->
